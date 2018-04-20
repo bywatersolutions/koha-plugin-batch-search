@@ -1,19 +1,19 @@
 [% INCLUDE 'doc-head-open.inc' %]
- <title>Koha: Unused Authirities Report: Select options</title>
+ <title>Koha: Batch Search Report: </title>
 [% INCLUDE 'doc-head-close.inc' %]
 </head>
 <body>
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
 
-<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Unused Authorities Report &rsaquo; Options</div>
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo;  <a href="/cgi-bin/koha/plugins/run.pl?class=Koha::Plugin::Com::ByWaterSolutions::BatchSearch&method=report">Batch search report</a></div>
 
 <div id="doc3">
-    <h3>Generate List of unused authorities</h3>
-    <p> This report searches for each authority using a simple search and counts the results to determine if they are used.  It may have a long run time on systems with many authorities.</p>
+    <h3>Select the terms to search</h3>
+    <p> This report searches each term using a simple search and returns the result biblionumbers.</p>
 
         <!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
-<form method="get">
+<form method="post">
                 <input type="hidden" name="class" value="[% CLASS %]"/>
                 <input type="hidden" name="method" value="[% METHOD %]"/>
 
@@ -23,29 +23,11 @@
 <option value="csv">CSV File</option>
 </select>
 <br/>
-<label for="lower_lim">Start record id:</label>
-<input type="number" name="lower_lim" />
-<label for="upper_lim">Ending record id:</label>
-<input type="number" name="upper_lim" />
-<label for="created_date">Records created on (YYYY-MM-DD):</label>
-<input type="text" name="created_date" />
+<textarea name="search_terms" cols="30" rows="10"></textarea>
+<br />
+<label for="test_isbns">Search isbn variations (if terms contain vlid isbns)</label>
+<input type="checkbox" name="test_isbns" value="1">
 <br/>
-<h3> NOTE: a limit of 5000 records will be checked, please use batches to avoid timeouts / resource drain</h3>
-<h6> You can override this limit here at your own risk <input type="number" name="check_lim" /></h6>
-<br/><br/>
-
-<label for="type_lim">Authority type:</label>
-<select name="type_lim">
-  <option value='All'>All</option>
-  <option value='GENRE/FORM'>Genre / Form terms</option>
-  <option value='GEOGR_NAME'>Geographic names</option>
-  <option value='MEETI_NAME'>Meeting name</option>
-  <option value='PERSO_NAME'>Personal name</option>
-  <option value='TOPIC_TERM'>Topical term</option>
-  <option value='UNIF_TITLE'>Uniform title</option>
-</select>
-<br/>
-
 <input type="submit" value="Run Report" />
 
 </form>

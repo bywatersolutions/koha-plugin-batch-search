@@ -5,39 +5,77 @@
 <body>
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
+[% USE Dumper %]
 
-<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Unused Authority Report &rsaquo; Unused Authority List</div>
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; <a href="/cgi-bin/koha/plugins/run.pl?class=Koha::Plugin::Com::ByWaterSolutions::BatchSearch&method=report">Batch search report</a> &rsaquo; Batch search result List</div>
 
 <div id="doc3">
+
+[% IF results_loop %]
+
+<button class="toggle_found">Hide found</button>
+<button class="toggle_unfound">Hide unfound</button>
 
 <table border=1>
   <thead>
     <tr>
-      <th>Authority ID</th>
-      <th>Authority Type</th>
-      <th>Main Heading</th>
-      <th>Link</th>
-      <th>Last modififed</th>
-      <th>005 Field</th>
-      <th>035 Field</th>
-      <th>040 Field</th>
+      <th>Term searched</th>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Items Count</th>
+      <th>Holding branch</th>
+      <th>Shelving Location</th>
+      <th>Call Number</th>
+      <th>Enumchron</th>
+      <th>Barcode</th>
+      <th>Results</th>
     </tr>
   </thead>
-
   <tbody>
-    [% FOREACH r IN results_loop %]
-      <tr>
-        <td>[% r.authid %]</td>
-        <td>[% r.authtypecode %]</td>
-        <td>[% r.main_term %]</td>
-        <td><a href="/cgi-bin/koha/authorities/detail.pl?authid=[% r.authid %]">Link to authority record</a></td>
-        <td>[% r.modification_time %]</td>
-        <td>[% r.marcdate %]</td>
-        <td>[% r.syscontrol%]</td>
-        <td>[% r.origsource %]</td>
+[% FOREACH result IN results_loop %]
+    [% UNLESS result.item_count %]
+    <tr class="unfound_term">
+    [% ELSE %]
+    <tr class="found_term">
+    [% END %]
+        <td>[% result.term %]</td>
+        <td>[% result.title %]</td>
+        <td>[% result.author %]</td>
+        <td>[% result.item_count %]</td>
+        <td>[% result.first_item.holdingbranch %]</td>
+        <td>[% result.first_item.location %]</td>
+        <td>[% result.first_item.itemcallnumber %]</td>
+        <td>[% result.first_item.enumchron %]</td>
+        <td>[% result.first_item.barcode %]</td>
+        <td><a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% result.biblionumber %]">[% result.biblionumber %]</a></td>
       </tr>
     [% END %]
   </tbody>
 </table>
+[% ELSE %]
+<h2>No results were found!</h2>
+[% END %]
 </div>
+
+<script>
+    $(document).ready(function(){
+        $(".toggle_found").click(function(){
+            $(".found_term").toggle();
+            if( $(this).text() == "Hide found" ) {
+               $(this).text("Show found");
+            } else { $(this).text("Hide found"); }
+        });
+        $(".toggle_unfound").click(function(){
+            $(".unfound_term").toggle();
+            if( $(this).text() == "Hide unfound" ) {
+               $(this).text("Show unfound");
+            } else { $(this).text("Hide unfound"); }
+        });
+            console.log(  $(".found_term").length );
+        if( $(".found_term").length > 0 ){
+        console.log("okay");
+            $(".toggle_unfound").click();
+        }
+    });
+</script>
 [% INCLUDE 'intranet-bottom.inc' %]

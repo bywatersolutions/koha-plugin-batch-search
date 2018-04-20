@@ -11,6 +11,9 @@ use C4::Context;
 use C4::Auth;
 use C4::Search;
 use MARC::Record;
+use List::MoreUtils qw/uniq/;
+use C4::Koha;
+use Koha::DateUtils;
 
 ## Here we set our plugin version
 our $VERSION = "{VERSION}";
@@ -110,56 +113,49 @@ sub report_step2 {
     my $dbh = C4::Context->dbh;
 
     my $output = $cgi->param('output');
-    my $lower_lim = $cgi->param('lower_lim');
-    my $upper_lim = $cgi->param('upper_lim');
-    my $type_lim = $cgi->param('type_lim');
-    my $check_lim = $cgi->param('check_lim') || 5_000;
-    my $created_date = $cgi->param("created_date");
+    my $search_terms = $cgi->param('search_terms');
+    my $test_isbns = $cgi->param('test_isbns');
 
-    my $query = "SELECT authid,authtypecode,IF( authtypecode='CORPO_NAME',ExtractValue(marcxml,'//datafield[\@tag=\"110\"]/*'),
-                               IF( authtypecode='GENRE/FORM',ExtractValue(marcxml,'//datafield[\@tag=\"155\"]/*'),
-                               IF( authtypecode='GEOGR_NAME',ExtractValue(marcxml,'//datafield[\@tag=\"151\"]/*'),
-                               IF( authtypecode='MEETI_NAME',ExtractValue(marcxml,'//datafield[\@tag=\"111\"]/*'),
-                               IF( authtypecode='PERSO_NAME',ExtractValue(marcxml,'//datafield[\@tag=\"100\"]/*'),
-                               IF( authtypecode='TOPIC_TERM',ExtractValue(marcxml,'//datafield[\@tag=\"150\"]/*'),
-                               IF( authtypecode='UNIF_TITLE',ExtractValue(marcxml,'//datafield[\@tag=\"130\"]/*'),''))))))) AS main_term,
-                               modification_time,
-                               ExtractValue(marcxml,'//controlfield[\@tag=\"005\"]') AS marcdate,
-                               ExtractValue(marcxml,'//datafield[\@tag=\"035\"]/subfield[\@code=\"a\"]') AS syscontrol,
-                               ExtractValue(marcxml,'//datafield[\@tag=\"040\"]/subfield[\@code=\"a\"]') AS origsource
-        FROM auth_header";
-    if ( $lower_lim*$upper_lim ) { $query .= " WHERE authid BETWEEN $lower_lim AND $upper_lim "; }
-    elsif ($lower_lim) {$query .= " WHERE authid > $lower_lim ";}
-    elsif ($upper_lim) {$query .= " WHERE authid < $upper_lim ";}
-    if ( $type_lim ne 'All' ){
-        if ( $upper_lim || $lower_lim ) { $query .= " AND authtypecode = '$type_lim' ";}
-        else { $query .= " WHERE authtypecode = '$type_lim' ";}
-    }
-    if ($created_date) {
-        if ($lower_lim || $upper_lim || $type_lim ne 'All') { $query .= " AND datecreated = '$created_date' ";}
-        else { $query .= " WHERE datecreated = '$created_date' ";}
-    }
-    $query .= " ORDER BY authtypecode, main_term";
-    warn $query;
-    my $sth = $dbh->prepare($query);
-    $sth->execute();
-    my $i=0;
+    push my @term_list, uniq( split(/\s\n/,$search_terms) );
+
     my @results;
-    my $i =0 ;
-    while ( my $row = $sth->fetchrow_hashref() ) {
-        $i++;
-        if($i>$check_lim){last;}
-        my $a_query = 'an='.$row->{'authid'};
-        my ($err,$res,$used) = C4::Search::SimpleSearch($a_query,0,10);
-        if (defined $err) { $used=0; }
-        if ($used > 0){ next}
-        else{push( @results, $row );}
+
+    foreach my $term ( @term_list ){
+        my $query = GetVariationsOfISBNs($term) ? join " or ", map { "isbn:".$_ } GetVariationsOfISBNs($term) : "kw:".$term;
+        my $searcher = Koha::SearchEngine::Search->new({index => $Koha::SearchEngine::BIBLIOS_INDEX});
+        my ($err,$res,$used) = $searcher->simple_search_compat( $query, 0, undef );
+        my @biblionumbers;
+        my ( $biblionumber_tag, $biblionumber_subfield ) = C4::Biblio::GetMarcFromKohaField( "biblio.biblionumber", "" );
+        if ( $err ) {
+            my $err = { term => $term, title => "Error when searching: ".$err };
+            push @results, $err;
+            next;
+        }
+        if ( @$res ){
+            foreach my $result ( @$res ){
+                $result = MARC::Record::new_from_xml($result) unless ( C4::Context->preference('SearchEngine') eq 'Elasticsearch' );
+                my $id = ( $biblionumber_tag > 10 ) ?
+                $result->field($biblionumber_tag)->subfield($biblionumber_subfield) :
+                   $result->field($biblionumber_tag)->data();
+                my $biblio =  Koha::Biblios->find( $id );
+                if ( $biblio ) {
+                    my $items = $biblio->items;
+                    $biblio = $biblio->unblessed;
+                    $biblio->{term} = $term;
+                    $biblio->{item_count} = $items->count;
+                    $biblio->{first_item} = $items->next;
+                }
+                push @results, $biblio;
+            }
+        } else {
+            my $no_found = { term => $term, title => "No results found for this term" };
+            push @results, $no_found;
+        }
     }
-
-
     my $filename;
     if ( $output eq "csv" ) {
-        print $cgi->header( -attachment => 'unusedauthorities.csv' );
+        my $filedate = output_pref({dt=>dt_from_string(),dateonly=>1,dateformat=>'sql'});
+        print $cgi->header( -attachment => 'batch_search_report_'.$filedate.'.csv' );
         $filename = 'report-step2-csv.tt';
     }
     else {
