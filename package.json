@@ -1,5 +1,5 @@
 {
-  "name": "koha-plugin-bacth-search",
+  "name": "koha-plugin-batch-search",
   "version": "1.5.2",
   "previous_version": "1.5.1",
   "description": "Koha Batch Search Plugin",
