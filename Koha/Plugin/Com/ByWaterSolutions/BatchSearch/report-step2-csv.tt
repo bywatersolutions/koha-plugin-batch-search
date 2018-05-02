@@ -1,3 +1,5 @@
 isbn,title,author,itemcount,holdingbranch,location,callnumber,enumchron,barcode,biblionumber
 [% FOREACH r IN results_loop %]"[% r.term %]","[% r.title %]","[% r.author %]","[% r.item_count %]","[% r.first_item.holdingbranch %]","[% r.first_item.location %]","[% r.first_item.itemcallnumber %]","[% r.first_item.enumchron %]","[% r.first_item.barcode %]","[% r.first_item.biblionumber %]"
 [% END %]
+[% FOREACH i IN ignore_loop %]"[% i %]","Term not searched (too short for isbn)"
+[% END %]

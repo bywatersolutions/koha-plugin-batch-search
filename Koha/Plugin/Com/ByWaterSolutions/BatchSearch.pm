@@ -119,9 +119,14 @@ sub report_step2 {
     push my @term_list, uniq( split(/\s\n/,$search_terms) );
 
     my @results;
+    my @ignore;
 
     foreach my $term ( @term_list ){
-        my $query = GetVariationsOfISBNs($term) ? join " or ", map { "isbn:".$_ } GetVariationsOfISBNs($term) : "kw:".$term;
+        if( length($term) < 10 ) {
+            push @ignore, $term;
+            next;
+        }
+        my $query = GetVariationsOfISBNs($term) ? join " or ", map { "isbn:".$_ } GetVariationsOfISBNs($term) : "isbn:".$term;
         my $searcher = Koha::SearchEngine::Search->new({index => $Koha::SearchEngine::BIBLIOS_INDEX});
         my ($err,$res,$used) = $searcher->simple_search_compat( $query, 0, undef );
         my @biblionumbers;
@@ -167,6 +172,7 @@ sub report_step2 {
 
     $template->param(
         results_loop => \@results,
+        ignore_loop  => \@ignore,
     );
 
     print $template->output();

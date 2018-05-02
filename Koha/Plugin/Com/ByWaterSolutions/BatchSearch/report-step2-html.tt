@@ -11,10 +11,29 @@
 
 <div id="doc3">
 
+[% IF ignore_loop %]
+<div class="dialog alert"><p>Warning: The following ISBNs were too short and not searched</p></div>
+<table style="margin:auto;">
+    <thead>
+        <tr>
+            <td>Terms not searched</td>
+        </tr>
+    </thead>
+    <tbody>
+        [% FOREACH i IN ignore_loop %]
+        <tr>
+            <td>[% i %]</td>
+        </tr>
+        [% END %]
+    </tbody>
+</table>
+[% END %]
+
 [% IF results_loop %]
 
 <button class="toggle_found">Hide found</button>
 <button class="toggle_unfound">Hide unfound</button>
+
 
 <table border=1>
   <thead>
@@ -32,23 +51,23 @@
     </tr>
   </thead>
   <tbody>
-[% FOREACH result IN results_loop %]
-    [% UNLESS result.item_count %]
-    <tr class="unfound_term">
-    [% ELSE %]
-    <tr class="found_term">
-    [% END %]
-        <td>[% result.term %]</td>
-        <td>[% result.title %]</td>
-        <td>[% result.author %]</td>
-        <td>[% result.item_count %]</td>
-        <td>[% result.first_item.holdingbranch %]</td>
-        <td>[% result.first_item.location %]</td>
-        <td>[% result.first_item.itemcallnumber %]</td>
-        <td>[% result.first_item.enumchron %]</td>
-        <td>[% result.first_item.barcode %]</td>
-        <td><a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% result.biblionumber %]">[% result.biblionumber %]</a></td>
-      </tr>
+    [% FOREACH result IN results_loop %]
+        [% UNLESS result.item_count %]
+        <tr class="unfound_term">
+        [% ELSE %]
+        <tr class="found_term">
+        [% END %]
+            <td>[% result.term %]</td>
+            <td>[% result.title %]</td>
+            <td>[% result.author %]</td>
+            <td>[% result.item_count %]</td>
+            <td>[% result.first_item.holdingbranch %]</td>
+            <td>[% result.first_item.location %]</td>
+            <td>[% result.first_item.itemcallnumber %]</td>
+            <td>[% result.first_item.enumchron %]</td>
+            <td>[% result.first_item.barcode %]</td>
+            <td><a href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% result.biblionumber %]">[% result.biblionumber %]</a></td>
+        </tr>
     [% END %]
   </tbody>
 </table>
