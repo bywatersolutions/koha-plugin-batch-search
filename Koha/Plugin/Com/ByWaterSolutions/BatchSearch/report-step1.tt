@@ -25,7 +25,7 @@
 <br/>
 <textarea name="search_terms" cols="30" rows="10"></textarea>
 <br />
-<label for="test_isbns">Search isbn variations (if terms contain vlid isbns)</label>
+<label for="test_isbns">Search isbn variations (if terms contain valid isbns)</label>
 <input type="checkbox" name="test_isbns" value="1">
 <br/>
 <input type="submit" value="Run Report" />
