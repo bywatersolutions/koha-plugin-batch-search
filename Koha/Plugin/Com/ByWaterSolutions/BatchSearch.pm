@@ -126,7 +126,7 @@ sub report_step2 {
             push @ignore, $term;
             next;
         }
-        my $query = GetVariationsOfISBNs($term) ? join " or ", map { "isbn:".$_ } GetVariationsOfISBNs($term) : "isbn:".$term;
+        my $query = $test_isbns && GetVariationsOfISBNs($term) ? join " OR ", map { "isbn:".$_ } GetVariationsOfISBNs($term) : "isbn:".$term;
         my $searcher = Koha::SearchEngine::Search->new({index => $Koha::SearchEngine::BIBLIOS_INDEX});
         my ($err,$res,$used) = $searcher->simple_search_compat( $query, 0, undef );
         my @biblionumbers;
