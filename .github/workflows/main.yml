@@ -99,17 +99,20 @@ jobs:
         cd ..
         pwd
         ls -alh
-        echo "SLEEPING 3 MINUTES"
+        echo "`date`: SLEEPING 3 MINUTES"
         sleep 60
-        echo "1 MINUTE DONE"
+        echo "`date`: 1 MINUTE DONE"
         sleep 60
-        echo "2 MINUTES DONE"
+        echo "`date`: 2 MINUTES DONE"
         sleep 60
-        echo "3 MINUTES DONE"
+        echo "`date`: 3 MINUTES DONE"
         echo "WAKING UP"
+        echo "DOCKER LOGS"
+        docker logs koha_koha_1 2>&1
+        echo "/DOCKER LOGS"
         docker cp $GITHUB_REPO/. koha_koha_1:/var/lib/koha/kohadev/plugins
         docker exec koha_koha_1 bash -c 'prove /var/lib/koha/kohadev/plugins/t'
-        
+
     - name: Post test cleanup
       run: |
         docker-compose down
