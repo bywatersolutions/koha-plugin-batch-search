@@ -7,6 +7,7 @@ use Modern::Perl;
 use base qw(Koha::Plugins::Base);
 
 ## We will also need to include any Koha libraries we want to access
+use CGI qw ( -utf8 );
 use C4::Context;
 use C4::Auth;
 use C4::Search;
@@ -138,7 +139,7 @@ sub report_step2 {
         }
         if ( @$res ){
             foreach my $result ( @$res ){
-                $result = MARC::Record::new_from_xml($result) unless ( C4::Context->preference('SearchEngine') eq 'Elasticsearch' );
+                $result = MARC::Record::new_from_xml($result, 'UTF-8') unless ( C4::Context->preference('SearchEngine') eq 'Elasticsearch' );
                 my $id = ( $biblionumber_tag > 10 ) ?
                 $result->field($biblionumber_tag)->subfield($biblionumber_subfield) :
                    $result->field($biblionumber_tag)->data();
@@ -164,7 +165,10 @@ sub report_step2 {
         $filename = 'report-step2-csv.tt';
     }
     else {
-        print $cgi->header();
+        print $cgi->header({
+            type      => 'text/html',
+            charset   => 'utf-8',
+        });
         $filename = 'report-step2-html.tt';
     }
 
