@@ -8,12 +8,15 @@ use base qw(Koha::Plugins::Base);
 
 ## We will also need to include any Koha libraries we want to access
 use CGI qw ( -utf8 );
-use C4::Context;
-use C4::Auth;
-use C4::Search;
 use MARC::Record;
 use List::MoreUtils qw/uniq/;
+
+use C4::Auth;
+use C4::Context;
+use C4::Installer (TableExists);
 use C4::Koha;
+use C4::Search;
+
 use Koha::DateUtils;
 
 ## Here we set our plugin version
@@ -76,11 +79,14 @@ sub install() {
 
     my $table = $self->get_qualified_table_name('mytable');
 
-    return C4::Context->dbh->do( "
-        CREATE TABLE  $table (
-            `borrowernumber` INT( 11 ) NOT NULL
-        ) ENGINE = INNODB;
-    " );
+    unless( TableExists($table) ){
+        return C4::Context->dbh->do( "
+            CREATE TABLE  $table (
+                `borrowernumber` INT( 11 ) NOT NULL
+            ) ENGINE = INNODB;
+        " );
+    }
+    return true;
 }
 
 ## This method will be run just before the plugin files are deleted
