@@ -13,7 +13,7 @@ use List::MoreUtils qw/uniq/;
 
 use C4::Auth;
 use C4::Context;
-use C4::Installer (TableExists);
+use C4::Installer qw(TableExists);
 use C4::Koha;
 use C4::Search;
 
@@ -86,7 +86,7 @@ sub install() {
             ) ENGINE = INNODB;
         " );
     }
-    return true;
+    return 1;
 }
 
 ## This method will be run just before the plugin files are deleted
