@@ -17,7 +17,7 @@ use C4::Installer qw(TableExists);
 use C4::Koha;
 use C4::Search;
 
-use Koha::DateUtils;
+use Koha::DateUtils qw( dt_from_string output_pref );
 
 ## Here we set our plugin version
 our $VERSION = "{VERSION}";
