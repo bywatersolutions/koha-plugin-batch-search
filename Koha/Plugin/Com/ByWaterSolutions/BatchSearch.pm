@@ -20,7 +20,7 @@ use C4::Search;
 use Koha::DateUtils qw( dt_from_string output_pref );
 
 ## Here we set our plugin version
-our $VERSION = "{VERSION}";
+our $VERSION = "1.5.12";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
@@ -28,7 +28,7 @@ our $metadata = {
     author => 'Nick Clemens',
     description => 'This plugin searches your system for a list of terms',
     date_authored   => '2016-02-25',
-    date_updated    => '2016-02-25',
+    date_updated    => '2026-10-12',
     minimum_version => '3.18',
     maximum_version => undef,
     version         => $VERSION,
