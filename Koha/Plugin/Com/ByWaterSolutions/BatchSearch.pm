@@ -14,7 +14,7 @@ use List::MoreUtils qw/uniq/;
 use C4::Auth;
 use C4::Context;
 use C4::Installer qw(TableExists);
-use C4::Koha;
+use C4::Koha qw(GetVariationsOfISBNs);
 use C4::Search;
 
 use Koha::DateUtils qw( dt_from_string output_pref );
